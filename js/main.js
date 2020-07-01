@@ -1,3 +1,5 @@
+import {playRandomAudio} from './audio.js'
+
 const canvas = document.getElementById('canvas')
 const context = canvas.getContext('2d')
 
@@ -9,7 +11,6 @@ let then, now, elapsed, FPSInterval
 
 canvas.width = CANVAS_WIDTH
 canvas.height = CANVAS_HEIGHT
-
 
 
 class Platform {
@@ -94,8 +95,11 @@ class Player {
         this.yVelocity = config.yVelocity
         this.state = config.state
         this.theme = config.theme
+        this.frame = config.frame
+        this.frames = config.frames
 
         this.FPSInterval = 1000 / config.FP
+        this.skin = this.render()
     }
 
     render() {
@@ -120,24 +124,32 @@ const controller = {
                 this.right = keyState
                 break
             case 'ArrowUp':
+                playRandomAudio()
                 this.up = keyState
                 break
         }
+        
+        if (player.frame < player.frames - 1) 
+            player.frame++
+        else 
+            player.frame = 0
     }
 }
 
 const player = new Player({
     xPrev: 0,
     yPrev: 0,
-    width: 32,
-    height: 64,
+    width: 50,
+    height: 50,
     x: 0,
     y: 0,
     xVelocity: 0,
     yVelocity: 0,
     FPS: 60,
     state: 'staying',
-    theme: './Player.png'
+    theme: './img/Player.png', 
+    frame: 0, 
+    frames: 5
 })
 
 const update = () => {
@@ -208,7 +220,20 @@ const collideHandler = (obst, obj) => {
     }
 }
 
-
+const drawPlayer = () => {
+    context.fillStyle = '#000000'
+    context.drawImage(
+        player.skin, 
+        199 * player.frame, 
+        0, 
+        200, 
+        200, 
+        player.x, 
+        player.y, 
+        player.width, 
+        player.height
+    )
+}
 
 const draw = (then) => {
     // Background
@@ -216,8 +241,7 @@ const draw = (then) => {
     context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
 
     // Player
-    context.fillStyle = '#000000'
-    context.fillRect(player.x, player.y, player.width, player.height)
+    drawPlayer()
     // context.drawImage(obstImage, )
     requestAnimationFrame(draw)
 
